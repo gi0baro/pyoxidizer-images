@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: gi0baro/pyoxidizer
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        target:
+          - pyoxidizer: '0.22.0'
+            rust: '1.61'
+          - pyoxidizer: '0.23.0'
+            rust: '1.65'
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: docker/login-action@v1
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build GNU
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: docker/Dockerfile.gnu
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.target.pyoxidizer }}-gnu
+        build-args: |
+          VRUST=${{ matrix.target.rust }}
+          VPYOXI=${{ matrix.target.pyoxidizer }}
+
+    - name: Build MUSL
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: docker/Dockerfile.musl
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ matrix.target.pyoxidizer }}-musl
+        build-args: |
+          VRUST=${{ matrix.target.rust }}
+          VPYOXI=${{ matrix.target.pyoxidizer }}

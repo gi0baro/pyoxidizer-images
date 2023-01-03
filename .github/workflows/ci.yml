@@ -24,6 +24,8 @@ jobs:
             rust: '1.61'
           - pyoxidizer: '0.23.0'
             rust: '1.65'
+          - pyoxidizer: '0.24.0'
+            rust: '1.66'
 
     steps:
     - uses: actions/checkout@v2
